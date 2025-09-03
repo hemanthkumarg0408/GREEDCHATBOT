@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  
+<head>
+  <meta charset="UTF-8" />
+  <title>Greed Bot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at top left, #0f2027, #203a43, #2c5364);
+      --neon-blue: #00f9ff;
+      --neon-pink: #703cffff;
+      --neon-purple: #8e2de2;
+      --glass-bg: rgba(255, 255, 255, 0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Orbitron', 'Segoe UI', sans-serif;
+      background: var(--bg-gradient);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    .container {
+      background: var(--glass-bg);
+      backdrop-filter: blur(25px) saturate(180%);
+      border-radius: 20px;
+      width: 460px;
+      max-width: 95%;
+      padding: 30px;
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      animation: floatIn 0.8s ease;
+    }
+
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink), var(--neon-purple));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 12px var(--neon-blue);
+    }
+
+    /* ==== Onboarding Form ==== */
+    #user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    #user-info input, #user-info select {
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    #user-info option { color: #000; }
+
+    #start-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #start-btn:hover { transform: scale(1.05); }
+
+    /* ==== Chat ==== */
+    #chat-section { display: none; flex-direction: column; }
+
+    #chat-box {
+      flex: 1;
+      height: 320px;
+      overflow-y: auto;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+    }
+
+    .message {
+      max-width: 75%;
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 18px;
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .user {
+      background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+      margin-left: auto;
+      border-bottom-right-radius: 5px;
+      text-align: right;
+      color: #fff;
+      box-shadow: 0 0 12px var(--neon-pink);
+    }
+
+    .bot {
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      margin-right: auto;
+      border-bottom-left-radius: 5px;
+      text-align: left;
+      color: #fff;
+      box-shadow: 0 0 12px var(--neon-blue);
+    }
+
+    #chat-form {
+      display: flex;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: transparent;
+      color: #fff;
+    }
+
+    #user-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+
+    button[type="submit"] {
+      padding: 0 20px;
+      border: none;
+      background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡ Greed Bot</h1>
+
+    <!-- Onboarding Section -->
+    <div id="user-info">
+      <input type="number" id="income" placeholder="💵 Monthly Income" />
+      <input type="number" id="age" placeholder="🎂 Age" />
+      <select id="risk">
+        <option value="">⚖️ Select Risk Tolerance</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <button id="start-btn">Start Chat</button>
+    </div>
+
+    <!-- Chat Section -->
+    <div id="chat-section">
+      <div id="chat-box"></div>
+      <form id="chat-form">
+        <input type="text" id="user-input" placeholder="Ask me about savings, taxes, investments..." />
+        <button type="submit">➤</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('start-btn');
+    const userInfo = document.getElementById('user-info');
+    const chatSection = document.getElementById('chat-section');
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat-box');
+
+    let userProfile = {};
+
+    function addMessage(text, sender) {
+      const div = document.createElement('div');
+      div.classList.add('message', sender);
+      div.textContent = text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    startBtn.addEventListener('click', () => {
+      const income = document.getElementById('income').value;
+      const age = document.getElementById('age').value;
+      const risk = document.getElementById('risk').value;
+
+      if (!income || !age || !risk) {
+        alert("Please fill all fields!");
+        return;
+      }
+
+      userProfile = { income, age, risk };
+      userInfo.style.display = 'none';
+      chatSection.style.display = 'flex';
+
+      addMessage(`👋 Welcome! I see you're ${age} years old, earning ₹${income}/month with a ${risk} risk tolerance. Let's plan smart investments!`, 'bot');
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userMessage = input.value;
+      if (!userMessage.trim()) return;
+
+      addMessage(userMessage, 'user');
+      input.value = '';
+
+      const formData = new FormData();
+      formData.append('message', userMessage);
+      formData.append('income', userProfile.income);
+      formData.append('age', userProfile.age);
+      formData.append('risk', userProfile.risk);
+
+      const res = await fetch('/chat', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      addMessage(data.reply, 'bot');
+    });
+  </script>
+</body>
+</html>
